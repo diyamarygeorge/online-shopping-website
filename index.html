@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Home — Demo Shop</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    body { background:#f5f7fb; }
+    .material-card { border-radius:12px; box-shadow: 0 10px 30px rgba(12,20,40,0.06); }
+    .material-btn { border-radius: 28px; padding: 10px 20px; box-shadow: 0 6px 14px rgba(0,0,0,0.06); }
+  </style>
+</head>
+<body>
+  <nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm">
+    <div class="container">
+      <a class="navbar-brand fw-bold" href="index.html">Shop</a>
+      <div class="collapse navbar-collapse" id="navMain">
+        <ul class="navbar-nav ms-auto">
+          <li class="nav-item"><a class="nav-link" href="shop.html">Shop</a></li>
+          <li class="nav-item" id="addProductNav" style="display:none"><a class="nav-link" href="add_product.html">Add Product</a></li>
+          <li class="nav-item"><a class="nav-link" href="cart.html">Cart</a></li>
+          <li class="nav-item"><a class="nav-link text-danger" href="#" id="logoutBtn">Logout</a></li>
+        </ul>
+      </div>
+    </div>
+  </nav>
+
+  <main class="container py-5">
+    <div class="row align-items-center">
+      <div class="col-md-6">
+        <div class="hero material-card p-4">
+          <h1 class="mb-3">Welcome to SoleDistrict</h1>
+          <p class="lead">Where Every Step Has Style.</p>
+          <p>At SoleDistrict, we believe the right pair of shoes can transform your day.
+Our store brings together comfort, style, and quality—curated for every kind of walker, runner, and dreamer.
+From everyday essentials to trend-driven sneakers, we handpick footwear that blends craftsmanship with modern design.
+
+Whether you're chasing goals or chasing sunsets, your journey starts with a single step.
+And we’re here to make every step unforgettable.</p>
+          <a href="shop.html" class="btn btn-primary material-btn">Start Shopping</a>
+        </div>
+      </div>
+      <div class="col-md-6 text-center">
+        <img src="C:\Users\Asus\OneDrive\Desktop\allfiles\sem 2\FSD\onlinewebsite\imagefolder\pic1.jpeg" class="img-fluid rounded shadow-sm" alt="hero">
+      </div>
+    </div>
+  </main>
+
+  <footer class="text-center py-3 small text-muted"></footer>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    const LS_USERS = 'users';
+    const LS_LOGGEDIN = 'loggedInUser';
+
+    function getUsers(){ try { return JSON.parse(localStorage.getItem(LS_USERS) || '[]'); } catch { return []; } }
+
+    // redirect to login if not logged in
+    const logged = localStorage.getItem(LS_LOGGEDIN);
+    if(!logged){ window.location.href = 'login.html'; }
+    else {
+      const me = getUsers().find(u => u.email === logged) || null;
+      if(me && me.isAdmin) document.getElementById('addProductNav').style.display = '';
+    }
+
+    document.getElementById('logoutBtn').addEventListener('click', function(e){
+      e.preventDefault();
+      localStorage.removeItem(LS_LOGGEDIN);
+      window.location.href = 'login.html';
+    });
+  </script>
+</body>
+</html>

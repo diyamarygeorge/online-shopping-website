@@ -1,0 +1,114 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Edit Product — Demo Shop</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    body { background:#f5f7fb; }
+    .material-card { border-radius:12px; box-shadow: 0 10px 30px rgba(12,20,40,0.06); }
+    .form-input { border-radius:8px; box-shadow: inset 0 2px 6px rgba(0,0,0,0.03); }
+    .material-btn { border-radius: 28px; padding: 8px 18px; box-shadow: 0 6px 12px rgba(0,0,0,0.06); }
+    .snackbar { visibility:hidden; min-width:200px; background:#323232; color:#fff; text-align:center; border-radius:6px; padding:10px 14px; position:fixed; left:50%; transform:translateX(-50%); bottom:30px; z-index:9999; font-size:14px; }
+    .snackbar.show { visibility:visible; animation: fadein .25s, fadeout .5s 2.4s; }
+    @keyframes fadein{ from{opacity:0;bottom:10px} to{opacity:1;bottom:30px} }
+    @keyframes fadeout{ from{opacity:1;bottom:30px} to{opacity:0;bottom:10px} }
+  </style>
+</head>
+<body>
+  <nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm">
+    <div class="container">
+      <a class="navbar-brand fw-bold" href="index.html">Shop</a>
+      <div class="collapse navbar-collapse" id="navMain">
+        <ul class="navbar-nav ms-auto align-items-center">
+          <li class="nav-item"><a class="nav-link" href="index.html">Home</a></li>
+          <li class="nav-item"><a class="nav-link" href="shop.html">Shop</a></li>
+          <li class="nav-item"><a class="nav-link" href="add_product.html">Add Product</a></li>
+          <li class="nav-item"><a class="nav-link" href="cart.html">Cart</a></li>
+          <li class="nav-item"><a class="nav-link text-danger" href="#" id="logoutBtn">Logout</a></li>
+        </ul>
+      </div>
+    </div>
+  </nav>
+
+  <main class="container py-4">
+    <div class="row justify-content-center">
+      <div class="col-md-7">
+        <div class="card p-4 material-card">
+          <h4 class="mb-3">Edit Product</h4>
+          <form id="editProductForm" novalidate>
+            <div class="mb-3">
+              <label class="form-label">Product name</label>
+              <input id="epname" class="form-control form-input" required />
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Description</label>
+              <textarea id="epdesc" class="form-control form-input" rows="3" required></textarea>
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Price (INR)</label>
+              <input id="epprice" type="number" min="0" class="form-control form-input" required />
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Image URL</label>
+              <input id="epimg" class="form-control form-input" placeholder="https://example.com/image.jpg" />
+            </div>
+            <div class="d-flex gap-2">
+              <button class="btn btn-primary material-btn" type="submit">Save Changes</button>
+              <a id="cancelBtn" class="btn btn-outline-secondary material-btn" href="shop.html">Cancel</a>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <div id="snackbar" class="snackbar"></div>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    const LS_PRODUCTS = 'products';
+    const LS_USERS = 'users';
+    const LS_LOGGEDIN = 'loggedInUser';
+    function showSnackbar(msg){ const s=document.getElementById('snackbar'); s.textContent=msg; s.classList.add('show'); setTimeout(()=> s.classList.remove('show'),2600); }
+    function getProducts(){ try { return JSON.parse(localStorage.getItem(LS_PRODUCTS) || '[]'); } catch { return []; } }
+    function saveProducts(list){ localStorage.setItem(LS_PRODUCTS, JSON.stringify(list)); }
+    function getUsers(){ try { return JSON.parse(localStorage.getItem(LS_USERS) || '[]'); } catch { return []; } }
+
+    const logged = localStorage.getItem(LS_LOGGEDIN);
+    if(!logged) window.location.href='login.html';
+    const me = getUsers().find(u=>u.email===logged);
+    if(!(me && me.isAdmin)){ alert('Admin access required.'); window.location.href='shop.html'; }
+
+    function queryParam(name){ return new URLSearchParams(location.search).get(name); }
+    const productId = Number(queryParam('id'));
+    if(!productId || Number.isNaN(productId)){ window.location.href='shop.html'; }
+
+    const products = getProducts();
+    const product = products.find(p => p.id === productId);
+    if(!product){ window.location.href='shop.html'; }
+
+    document.getElementById('epname').value = product.name || '';
+    document.getElementById('epdesc').value = product.description || '';
+    document.getElementById('epprice').value = product.price || '';
+    document.getElementById('epimg').value = product.imagename || '';
+
+    document.getElementById('logoutBtn').addEventListener('click', function(e){ e.preventDefault(); localStorage.removeItem(LS_LOGGEDIN); window.location.href='login.html'; });
+
+    document.getElementById('editProductForm').addEventListener('submit', function(e){
+      e.preventDefault();
+      const name = document.getElementById('epname').value.trim();
+      const desc = document.getElementById('epdesc').value.trim();
+      const price = Number(document.getElementById('epprice').value);
+      const img = document.getElementById('epimg').value.trim();
+      if(!name || !desc || isNaN(price) || price < 0) return showSnackbar('Please provide valid name, description and price.');
+      const prods = getProducts();
+      const idx = prods.findIndex(p => p.id === productId);
+      if(idx === -1) return showSnackbar('Product not found.');
+      prods[idx].name = name; prods[idx].description = desc; prods[idx].price = price; prods[idx].imagename = img || prods[idx].imagename;
+      saveProducts(prods);
+      showSnackbar('Product updated successfully'); setTimeout(()=> { window.location.href='shop.html'; },700);
+    });
+  </script>
+</body>
+</html>
